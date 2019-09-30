@@ -36,7 +36,7 @@ class PropertiesController extends Controller
             'start' => 'required|integer',
             'length' => 'required|integer'
         ]);
-
+        $columns = $request->columns;
         $offset = $request->start;
         $limit  = $request->length;
         $search = $request->search['value'];
@@ -76,7 +76,16 @@ class PropertiesController extends Controller
                     $query->orWhere('statuses.name', 'like', '%'.$search.'%');
                     $query->orWhere('projects.name', 'like', '%'.$search.'%');
                 });
+            })
+            ->where(function ($query) use($columns){
+                foreach ($columns as $c){
+                    if ($c['search']['value']){
+                        $query->where($this->returnSearchCridential($c['data']), 'like', '%'.$c['search']['value'].'%');
+                    }
+                };
             });
+
+        //continue here
         $propertiesCount = $properties->count();
 
         $properties = $properties
@@ -94,4 +103,19 @@ class PropertiesController extends Controller
 
         return response()->json($response, 200);
     }
+
+    function returnSearchCridential($val){
+        if (!in_array($val, ['status', 'country', 'project_name', 'property_type'])){
+            return $val;
+        }elseif ($val == 'property_type'){
+            return 'property_types.name';
+        }elseif ($val == 'project_name'){
+            return 'projects.name';
+        }elseif ($val == 'country'){
+            return 'countries.name';
+        }elseif ($val == 'status'){
+            return 'statuses.name';
+        }
+    }
+
 }

@@ -38,11 +38,25 @@ export default {
 
         }
     },
-
     mounted(){
         let users = [];
+        let vm = this;
+        $('#properties-table thead tr').clone(true).appendTo( '#properties-table thead' );
+        $('#properties-table thead tr:eq(1) th').each( function (i) {
+            var title = $(this).text();
+            $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
 
-        this.dataTable = $('#properties-table').DataTable({
+            $( 'input', this ).on( 'keyup change', function () {
+                if ( vm.dataTable.column(i).search() !== this.value ) {
+                    vm.dataTable
+                        .column(i)
+                        .search( this.value )
+                        .draw();
+                }
+            } );
+        } );
+
+        vm.dataTable = $('#properties-table').DataTable({
             pageLength: 20,
             orderCellsTop: true,
             fixedHeader: true,
